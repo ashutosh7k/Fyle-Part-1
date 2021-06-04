@@ -5,6 +5,9 @@ import csv
 import os
 from rest_framework.response import Response
 from part1 import serializers
+from rest_framework.decorators import api_view, renderer_classes
+from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
+from django.http import JsonResponse
 
 
 # Create your views here.
@@ -33,32 +36,36 @@ def serializerData(obj):
     return serializers.BankBranchesSerializer(obj).data
 
 
-def autocomplete(request):
+# @api_view(('GET',))
+# @renderer_classes((TemplateHTMLRenderer, JSONRenderer))
 
-    q = request.GET.get('q')
-    limit = request.GET.get('limit')
-    offset = request.GET.get('offset')
+class Autocomplete(APIView):
+    def get(self, request, *args, **kwargs):
+        q = request.GET.get('q')
+        limit = request.GET.get('limit')
+        offset = request.GET.get('offset')
 
-    objs = models.BankBranches.objects.filter(branch__icontains=q)
-    objs = objs[offset:]
-    objs = objs[0:limit]
+        objs = models.BankBranches.objects.filter(branch__icontains=q)
+        objs = objs[int(offset):]
+        objs = objs[0:int(limit)]
 
-    branches = list(map(serializerData, objs))
-    branches = {"branches": branches}
+        branches = list(map(serializerData, objs))
+        branches = {"branches": branches}
 
-    return Response(branches)
+        return JsonResponse(branches, safe=False)
 
 
-def search(request):
-    q = request.GET.get('q')
-    limit = request.GET.get('limit')
-    offset = request.GET.get('offset')
+class Search(APIView):
+    def get(self, request, *args, **kwargs):
+        q = request.GET.get('q')
+        limit = request.GET.get('limit')
+        offset = request.GET.get('offset')
 
-    objs = models.BankBranches.objects.filter(branch=q)
-    objs = objs[offset:]
-    objs = objs[0:limit]
+        objs = models.BankBranches.objects.filter(branch__iexact=q)
+        objs = objs[int(offset):]
+        objs = objs[0:int(limit)]
 
-    branches = list(map(serializerData, objs))
-    branches = {"branches": branches}
+        branches = list(map(serializerData, objs))
+        branches = {"branches": branches}
 
-    return Response(branches)
+        return JsonResponse(branches)

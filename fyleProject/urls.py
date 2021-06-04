@@ -19,6 +19,6 @@ from part1 import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('/api/branches/autocomplete', views.autocomplete),
-    path('/api/branches', views.search)
+    path('api/branches/autocomplete/', views.Autocomplete.as_view()),
+    path('api/branches/', views.Search.as_view())
 ]
